@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>NEON OUTPOST 2 - Mobile Edition</title>
+<style>
+:root { --bg: #050713; --tx: #eaf7ff; --cy: #00eaff; --pk: #ff2bd6; --gr: #32ff87; --ye: #ffe45c; --rd: #ff3d5a; --mu: #8492ad; box-sizing: border-box; padding-top: env(safe-area-inset-top,0px); padding-bottom: env(safe-area-inset-bottom,0px); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #050713; --tx: #eaf7ff; } }
+:root[data-theme="dark"] { --bg: #050713; --tx: #eaf7ff; }
+html { scroll-padding-top: env(safe-area-inset-top,0px); }
+* { box-sizing: border-box; margin: 0px; padding: 0px; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--tx); font: 14px / 1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+canvas { position: fixed; inset: 0px; width: 100%; height: 100%; cursor: crosshair; }
+
+#vg { position: fixed; inset: 0px; pointer-events: none; z-index: 4; box-shadow: rgb(255, 31, 74) 0px 0px 150px 40px inset; opacity: 0; }
+#hud { position: fixed; inset: 0px; pointer-events: none; z-index: 5; opacity: 0; transition: opacity 0.6s; }
+#hud.on { opacity: 1; }
+.tb { position: absolute; top: calc(12px + env(safe-area-inset-top,0px)); left: 12px; right: 12px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.card { min-width: 230px; padding: 10px 14px; border: 1px solid rgba(0, 234, 255, 0.25); border-radius: 14px; background: rgba(4, 8, 20, 0.72); backdrop-filter: blur(10px); }
+.nm { font-size: 11px; letter-spacing: 2px; color: var(--cy); margin-bottom: 6px; }
+.bar { position: relative; height: 12px; margin: 4px 0px; border-radius: 9px; background: rgb(16, 24, 42); overflow: hidden; }
+.bar.t { height: 5px; }
+.bar i { position: absolute; left: 0px; top: 0px; height: 100%; width: 100%; border-radius: 9px; transition: width 0.15s; }
+.bar .lg2 { background: rgba(255, 255, 255, 0.667); transition: width 0.7s 0.2s; }
+#hf { background: linear-gradient(90deg, rgb(255, 51, 85), rgb(255, 115, 92)); }
+#xf { background: linear-gradient(90deg, rgb(0, 217, 255), rgb(141, 92, 255)); }
+#df { background: var(--gr); }
+.bar b { position: absolute; inset: 0px; text-align: center; font-size: 9px; line-height: 12px; text-shadow: rgb(0, 0, 0) 0px 1px 2px; z-index: 2; }
+.rs { display: flex; gap: 6px; flex-wrap: wrap; place-content: flex-start flex-end; }
+.rs span { padding: 7px 11px; border-radius: 10px; background: rgba(4, 8, 20, 0.75); border: 1px solid rgba(255, 255, 255, 0.067); font-weight: 800; color: var(--ye); }
+#wv { position: absolute; top: calc(108px + env(safe-area-inset-top,0px)); left: 50%; transform: translateX(-50%); text-align: center; }
+#wt { font-weight: 900; letter-spacing: 4px; text-shadow: rgba(0, 234, 255, 0.5) 0px 0px 18px; }
+#ws { font-size: 11px; color: var(--mu); }
+#bb { position: absolute; top: calc(148px + env(safe-area-inset-top,0px)); left: 50%; width: min(620px, 70vw); transform: translate(-50%, -16px); opacity: 0; transition: 0.5s; }
+#bb.on { opacity: 1; transform: translateX(-50%); }
+#bn2 { text-align: center; font-size: 12px; letter-spacing: 4px; color: var(--pk); font-weight: 900; margin-bottom: 5px; }
+.bh { height: 13px; background: rgb(33, 13, 29); border: 1px solid rgba(255, 43, 214, 0.3); border-radius: 9px; overflow: hidden; }
+.bh i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, rgb(255, 35, 107), rgb(255, 43, 214), rgb(141, 92, 255)); transition: width 0.2s; }
+#cb { position: absolute; left: 20px; bottom: calc(20px + env(safe-area-inset-bottom,0px)); font-size: 26px; font-weight: 900; font-style: italic; color: var(--ye); text-shadow: rgba(255, 228, 92, 0.7) 0px 0px 18px; transform-origin: left bottom; }
+#tt { position: absolute; right: 16px; bottom: calc(18px + env(safe-area-inset-bottom,0px)); width: 280px; text-align: right; font-size: 12px; color: rgb(184, 198, 223); }
+#bn { position: fixed; left: 0px; right: 0px; top: 32%; text-align: center; pointer-events: none; z-index: 6; opacity: 0; }
+.ov { position: fixed; inset: 0px; z-index: 20; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(18, 26, 60, 0.8), rgba(2, 4, 12, 0.95) 70%); backdrop-filter: blur(8px); opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.ov.on { opacity: 1; pointer-events: auto; }
+.pn { width: min(920px, 94vw); max-height: 90vh; overflow: auto; padding: 28px; border: 1px solid rgba(0, 234, 255, 0.19); border-radius: 26px; background: linear-gradient(145deg, rgba(10, 17, 38, 0.97), rgba(5, 8, 20, 0.97)); box-shadow: rgba(0, 0, 0, 0.667) 0px 0px 70px; }
+.lg { text-align: center; font-size: clamp(36px, 8vw, 76px); font-weight: 900; letter-spacing: -3px; line-height: 0.92; text-shadow: rgba(0, 234, 255, 0.9) 0px 0px 14px; }
+.lg i { color: var(--cy); font-style: normal; }
+.sub { color: var(--mu); letter-spacing: 3px; font-size: 11px; text-align: center; margin-top: 12px; }
+.b { padding: 13px 18px; border: 1px solid rgba(0, 234, 255, 0.3); border-radius: 12px; background: rgba(0, 234, 255, 0.063); color: rgb(255, 255, 255); font-weight: 800; cursor: pointer; transition: 0.2s; }
+.b.p { background: linear-gradient(90deg, rgb(0, 168, 200), rgb(100, 80, 219)); border-color: transparent; }
+input { padding: 13px; border-radius: 12px; border: 1px solid rgba(0, 234, 255, 0.3); background: rgba(0, 0, 0, 0.4); color: rgb(255, 255, 255); font: inherit; text-align: center; }
+
+/* === STYLIZACJA KONTROLERÓW MOBILNYCH === */
+#touch-controls {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  display: none;
+}
+
+@media (pointer: coarse), (max-width: 900px) {
+  #touch-controls { display: block; }
+}
+
+.dpad {
+  position: absolute;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  left: 20px;
+  width: 150px;
+  height: 150px;
+  pointer-events: auto;
+}
+
+.dpad-btn {
+  position: absolute;
+  background: rgba(0, 234, 255, 0.15);
+  border: 1px solid rgba(0, 234, 255, 0.4);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cy);
+  font-weight: bold;
+  font-size: 18px;
+  backdrop-filter: blur(4px);
+  touch-action: manipulation;
+}
+
+.dpad-btn:active {
+  background: rgba(0, 234, 255, 0.4);
+}
+
+.dpad-up { top: 0; left: 50px; width: 50px; height: 50px; }
+.dpad-down { bottom: 0; left: 50px; width: 50px; height: 50px; }
+.dpad-left { top: 50px; left: 0; width: 50px; height: 50px; }
+.dpad-right { top: 50px; right: 0; width: 50px; height: 50px; }
+
+.action-btns {
+  position: absolute;
+  bottom: calc(25px + env(safe-area-inset-bottom, 0px));
+  right: 20px;
+  display: flex;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.act-btn {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  background: rgba(255, 43, 214, 0.2);
+  border: 2px solid rgba(255, 43, 214, 0.5);
+  color: #fff;
+  font-weight: 900;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  touch-action: manipulation;
+  box-shadow: 0 0 15px rgba(255, 43, 214, 0.2);
+}
+
+.act-btn:active {
+  background: rgba(255, 43, 214, 0.5);
+  transform: scale(0.95);
+}
+
+.act-btn.fire {
+  background: rgba(255, 61, 90, 0.25);
+  border-color: rgba(255, 61, 90, 0.6);
+}
+.act-btn.fire:active {
+  background: rgba(255, 61, 90, 0.6);
+}
+</style>
+</head>
+<body>
+
+<canvas id="c" width="768" height="1468"></canvas>
+<div id="vg"></div>
+
+<div id="hud">
+  <div class="tb">
+    <div class="card">
+      <div class="nm" id="nm"></div>
+      <div class="bar"><i class="lg2" id="hl"></i><i id="hf"></i><b id="ht"></b></div>
+      <div class="bar"><i id="xf"></i><b id="xt"></b></div>
+      <div class="bar t"><i id="df"></i></div>
+    </div>
+    <div class="rs">
+      <span>💰 <b id="co">0</b></span>
+      <span>💎 <b id="cr">0</b></span>
+      <span>★ <b id="sc">0</b></span>
+    </div>
+  </div>
+  <div id="wv"><div id="wt"></div><div id="ws"></div></div>
+  <div id="bb"><div id="bn2">⚠ OVERSEER</div><div class="bh"><i id="bh"></i></div></div>
+  <div id="cb"></div>
+  <div id="tt"></div>
+</div>
+
+<div id="bn"></div>
+
+<div class="ov on" id="ov">
+  <div class="pn">
+    <div class="lg">NEON<br><i>OUTPOST 2</i></div>
+    <p class="sub">LOGOWANIE OPERATORA</p>
+    <form style="max-width:360px;margin:24px auto 0;display:grid;gap:10px" onsubmit="return false;">
+      <input id="ni" maxlength="14" placeholder="Twój pseudonim" autocomplete="off" value="">
+      <button class="b p" id="loginBtn">▶ ZALOGUJ / ZAŁÓŻ PROFIL</button>
+    </form>
+    <p class="sub" style="margin-top:20px">Profile i ranking zapisują się lokalnie w tej przeglądarce.</p>
+  </div>
+</div>
+
+<!-- KONTROLER DOTYKOWY -->
+<div id="touch-controls">
+  <div class="dpad">
+    <div class="dpad-btn dpad-up" data-key="KeyW">▲</div>
+    <div class="dpad-btn dpad-down" data-key="KeyS">▼</div>
+    <div class="dpad-btn dpad-left" data-key="KeyA">◄</div>
+    <div class="dpad-btn dpad-right" data-key="KeyD">►</div>
+  </div>
+  <div class="action-btns">
+    <div class="act-btn fire" data-key="Space">STRZAŁ</div>
+    <div class="act-btn" data-key="KeyE">UŻYJ</div>
+  </div>
+</div>
+
+<script>
+// EMULACJA ZDARZEŃ KLAWIATURY DLA DOTYKU
+(function() {
+  function triggerKey(type, code) {
+    const keyMap = {
+      'KeyW': { key: 'w', keyCode: 87 },
+      'KeyS': { key: 's', keyCode: 83 },
+      'KeyA': { key: 'a', keyCode: 65 },
+      'KeyD': { key: 'd', keyCode: 68 },
+      'Space': { key: ' ', keyCode: 32 },
+      'KeyE': { key: 'e', keyCode: 69 }
+    };
+    
+    const info = keyMap[code] || { key: code, keyCode: 0 };
+    const event = new KeyboardEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      key: info.key,
+      code: code,
+      keyCode: info.keyCode,
+      which: info.keyCode
+    });
+    window.dispatchEvent(event);
+  }
+
+  function bindTouchBtn(el) {
+    const code = el.getAttribute('data-key');
+    if (!code) return;
+
+    el.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      triggerKey('keydown', code);
+    }, { passive: false });
+
+    el.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      triggerKey('keyup', code);
+    }, { passive: false });
+
+    el.addEventListener('touchcancel', function(e) {
+      e.preventDefault();
+      triggerKey('keyup', code);
+    }, { passive: false });
+  }
+
+  document.querySelectorAll('[data-key]').forEach(bindTouchBtn);
+})();
+</script>
+
+</body>
+</html>
